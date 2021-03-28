@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target":                       "es5",
+    "module":                       "commonjs",
+    "emitDecoratorMetadata":        false,
+    "experimentalDecorators":       true,
+    "sourceMap":                    false,
+    "moduleResolution":             "node",
+    "outDir":                       "dist",
+    "allowSyntheticDefaultImports": true,
+    "lib":                          [
+      "es2015",
+      "es6",
+      "es2015.core",
+      "es2015.promise"
+    ],
+    "types": [
+      "mocha",
+      "node"
+    ],
+  },
+  "exclude":         [
+    "tests",
+    "dist",
+    "coverage",
+    "node_modules"
+  ]
+}
