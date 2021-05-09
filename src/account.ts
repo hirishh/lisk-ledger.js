@@ -3,7 +3,7 @@ import * as bip32path from 'bip32-path';
 /**
  * Class to specify An account used to query the ledger.
  */
-export enum SupportedCoin {
+enum SupportedCoin {
   /**
    * @see https://lisk.io
    */
@@ -32,14 +32,15 @@ export class LedgerAccount {
   }
 
   /**
-   * Specify the coin index. Disabled at the moment.
+   * Specify the coin index. At the moment will force alwais Lisk.
    * @see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
    * @param {number} newIndex
    * @returns {this}
    */
-  private coinIndex(newIndex: SupportedCoin): this {
+  public coinIndex(newIndex: SupportedCoin): this {
     this.assertValidPath(newIndex);
-    this._coinIndex = newIndex;
+    // this._coinIndex = newIndex;
+    this._coinIndex = SupportedCoin.LISK;
     return this;
   }
 

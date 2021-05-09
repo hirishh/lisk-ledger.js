@@ -20,4 +20,6 @@ export interface ITransport {
    * @returns {Promise<Buffer>}
    */
   send(cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[]): Promise<Buffer>;
+
+  close(): void;
 }

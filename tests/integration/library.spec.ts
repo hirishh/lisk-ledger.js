@@ -13,13 +13,31 @@ import {
   VoteTx
 } from 'dpos-offline';
 import { transactions, cryptography } from '@liskhq/lisk-client';
-import { DposLedger, LedgerAccount, SupportedCoin } from '../../src/';
+import { DposLedger, LedgerAccount } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import { isBrowser, isNode } from 'browser-or-node';
 import { ITransport } from '../../src/ledger';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
 import { sha256 } from 'js-sha256';
+
+// import * as SegfaultHandler from 'segfault-handler';
+// SegfaultHandler.registerHandler('crash.log');
+
+const SegfaultHandler = require('segfault-handler');
+SegfaultHandler.registerHandler("crash.log");
+
+/*
+SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
+  // Do what you want with the signal, address, or stack (array)
+  // This callback will execute before the signal is forwarded on.
+  console.info("SEGFAULT!!")
+  console.info("signal", signal);
+  console.info("address", address);
+  console.info("stack", stack);
+});
+*/
+ 
 
 chai.use(chaiAsPromised);
 
@@ -52,7 +70,9 @@ describe('Integration tests', function () {
     transport = await (isBrowser ? TransportU2F.create() : TransportNodeHid.create());
     dl        = new DposLedger(transport);
   });
-  after(() => transport['close']());
+  after(() => {
+    transport.close();
+  });
 
   beforeEach(async () => {
     account   = new LedgerAccount();
@@ -68,7 +88,7 @@ describe('Integration tests', function () {
 
   it('version() should return version', async () => {
     expect(await dl.version()).to.be.deep.eq({
-      version: '1.4.2',
+      version: '1.4.3',
       coinID : 'lisk'
     });
   });
@@ -99,6 +119,7 @@ describe('Integration tests', function () {
         .to.be.rejectedWith('Ledger device: CODE_NOT_INITIALIZED (0x9802)');
     });
 
+    /*
     it('should fail if we try to sign an unknown tx', async () => {
       const tx = new SendTx()
         .set('amount', 0)
@@ -112,6 +133,7 @@ describe('Integration tests', function () {
       return expect(dl.signTX(account, tx.getBytes()))
         .to.be.rejectedWith('Ledger device: Invalid data received (0x6a80)'); // INCORRECT_DATA
     });
+    */
 
     it('should throw if unknown command', () => {
       return expect(dl.exchange(0x11))
@@ -126,6 +148,7 @@ describe('Integration tests', function () {
   describe('getPubKey', () => {
     it('should return always the same pubKey for same path', async () => {
       const target = await dl.getPubKey(account);
+      console.info('res', target);
       expect(target.publicKey).to.be.eq(pubKey);
     });
     it('should change if account index is changed', async () => {
@@ -148,7 +171,7 @@ describe('Integration tests', function () {
           const { publicKey, address } = await dl.getPubKey(account.account(acc + 200)
           );
           expect(publicKey.length).to.be.eq(64);
-          expect(cryptography.getLegacyAddressFromPublicKey(Buffer.from(publicKey, 'hex'))).to.be.eq(address);
+          expect(cryptography.getBase32AddressFromPublicKey(Buffer.from(publicKey, 'hex'))).to.be.eq(address);
         }
       }
     });
@@ -167,6 +190,7 @@ describe('Integration tests', function () {
     it('it should generate valid signature', async () => {
       const msg       = 'testMessage';
       const signature = await dl.signMSG(account, msg);
+      console.info('signature', signature);
       const res = verifySignedMessage(msgPrefix, msg, signature, pubKey);
       expect(res).is.true;
     });
@@ -208,11 +232,6 @@ describe('Integration tests', function () {
         .join('')}`;
       const signature = await dl.signMSG(account, msg);
       const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      console.log(JSON.stringify({
-        message: msg,
-        ... await dl.getPubKey(account),
-        signature: signature.toString('hex')
-      }, null, 2));
       expect(res).is.true;
     });
   });

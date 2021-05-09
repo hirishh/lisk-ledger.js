@@ -2,6 +2,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack        = require('webpack');
 const path           = require('path');
 const commonConfig = {
+  mode : 'development',
   entry  : './src/index.ts',
   output : {
     filename     : 'index.js',

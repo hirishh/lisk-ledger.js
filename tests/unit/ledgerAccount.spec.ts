@@ -16,6 +16,9 @@ describe('LedgerAccount', () => {
       '8000002c8000008680000002'
     ); // 44/134/2 (all hardened)
   });
+
+  // At the moment this functionality is disabled
+  /*
   it('should allow customization of coinIndex', () => {
     const acc = new LedgerAccount();
 
@@ -38,6 +41,7 @@ describe('LedgerAccount', () => {
     );
 
   });
+   */
 
   describe('failures', () => {
     const intFails = ['account', 'coinIndex'];
