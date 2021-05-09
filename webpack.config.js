@@ -1,4 +1,3 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack        = require('webpack');
 const path           = require('path');
 const commonConfig = {
@@ -30,7 +29,6 @@ const commonConfig = {
     '@ledgerhq/hw-transport-node-hid': 'hw-transport-node-hid'
   },
   plugins: [
-    new UglifyJSPlugin(),
   ]
 };
 module.exports     = [

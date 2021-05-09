@@ -2,16 +2,6 @@ import * as sodium from 'libsodium-wrappers';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
-import {
-  BaseTx,
-  CreateSignatureTx,
-  DelegateTx,
-  dposOffline,
-  GenericWallet,
-  MultiSignatureTx,
-  SendTx,
-  VoteTx
-} from 'dpos-offline';
 import { transactions, cryptography } from '@liskhq/lisk-client';
 import { DposLedger, LedgerAccount } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
@@ -20,24 +10,6 @@ import { isBrowser, isNode } from 'browser-or-node';
 import { ITransport } from '../../src/ledger';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
 import { sha256 } from 'js-sha256';
-
-// import * as SegfaultHandler from 'segfault-handler';
-// SegfaultHandler.registerHandler('crash.log');
-
-const SegfaultHandler = require('segfault-handler');
-SegfaultHandler.registerHandler("crash.log");
-
-/*
-SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
-  // Do what you want with the signal, address, or stack (array)
-  // This callback will execute before the signal is forwarded on.
-  console.info("SEGFAULT!!")
-  console.info("signal", signal);
-  console.info("address", address);
-  console.info("stack", stack);
-});
-*/
- 
 
 chai.use(chaiAsPromised);
 

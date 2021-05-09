@@ -24,8 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "bip32-path": "^0.4.2",
-    "crc": "^3.8.0",
-    "segfault-handler": "^1.3.0"
+    "crc": "^3.8.0"
   },
   "devDependencies": {
     "@ledgerhq/hw-transport": "^5.51.1",
@@ -44,7 +43,6 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.1.0",
-    "dpos-offline": "^1.6.3",
     "eslint": "^7.26.0",
     "is-empty": "^1.2.0",
     "js-sha256": "^0.9.0",
@@ -67,7 +65,6 @@
     "typedoc-clarity-theme": "^1.1.0",
     "typedoc-plugin-internal-external": "^2.2.0",
     "typescript": "^4.2.4",
-    "uglifyjs-webpack-plugin": "^2.2.0",
     "varuint-bitcoin": "^1.1.2",
     "webpack": "^5.36.2",
     "webpack-cli": "^4.7.0"
