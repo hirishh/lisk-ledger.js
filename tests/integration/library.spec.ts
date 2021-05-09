@@ -1,12 +1,12 @@
-import * as sodium from 'libsodium-wrappers';
+// import * as sodium from 'libsodium-wrappers';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { transactions, cryptography } from '@liskhq/lisk-client';
+import { cryptography } from '@liskhq/lisk-client';
 import { DposLedger, LedgerAccount } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
-import { isBrowser, isNode } from 'browser-or-node';
+import { isBrowser } from 'browser-or-node';
 import { ITransport } from '../../src/ledger';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
 import { sha256 } from 'js-sha256';

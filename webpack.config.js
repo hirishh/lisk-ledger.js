@@ -1,7 +1,7 @@
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack        = require('webpack');
 const path           = require('path');
 const commonConfig = {
-  mode : 'development',
   entry  : './src/index.ts',
   output : {
     filename     : 'index.js',
@@ -29,6 +29,7 @@ const commonConfig = {
     '@ledgerhq/hw-transport-node-hid': 'hw-transport-node-hid'
   },
   plugins: [
+    new UglifyJSPlugin(),
   ]
 };
 module.exports     = [

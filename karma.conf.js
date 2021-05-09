@@ -33,6 +33,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'tests/global-variables.js',
       'tests/integration/*spec.ts',
       'tests/unit/*spec.ts'
     ],
@@ -94,6 +95,7 @@ module.exports = function(config) {
     cfg.protocol = 'http:';
     // Only run unit tests in browser.
     cfg.files = [
+      'tests/global-variables.js',
       'tests/unit/*spec.ts'
     ];
   }
