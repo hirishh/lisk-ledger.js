@@ -55,7 +55,7 @@
     "karma-typescript": "^5.5.1",
     "karma-webpack": "^5.0.0",
     "libsodium-wrappers": "^0.7.9",
-    "mocha": "^8.4.0",
+    "mocha": "^5.2.0",
     "nyc": "^15.1.0",
     "shx": "^0.3.3",
     "sinon": "^10.0.0",
