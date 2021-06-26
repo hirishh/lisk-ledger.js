@@ -1,8 +1,8 @@
-// import * as sodium from 'libsodium-wrappers';
+import * as sodium from 'libsodium-wrappers';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { cryptography } from '@liskhq/lisk-client';
+import { cryptography, transactions } from '@liskhq/lisk-client';
 import { DposLedger, LedgerAccount } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
@@ -10,6 +10,7 @@ import { isBrowser } from 'browser-or-node';
 import { ITransport } from '../../src/ledger';
 import { encode as encodeVarInt } from 'varuint-bitcoin';
 import { sha256 } from 'js-sha256';
+import { TransferAssetSchema } from '../LiskSchemas';
 
 chai.use(chaiAsPromised);
 
@@ -35,8 +36,13 @@ describe('Integration tests', function () {
   let account: LedgerAccount;
   let pubKey: string;
   let address: string;
+  let lisk32: string;
   let transport: ITransport;
   const msgPrefix = cryptography.constants.SIGNED_MESSAGE_PREFIX;
+  const networkIdentifier = cryptography.getNetworkIdentifier(
+    cryptography.hexToBuffer("23ce0366ef0a14a91e5fd4b1591fc880ffbef9d988ff8bebf8f3666b0c09597d"),
+    "Lisk",
+  );
 
   before(async () => {
     transport = await (isBrowser ? TransportU2F.create() : TransportNodeHid.create());
@@ -52,6 +58,7 @@ describe('Integration tests', function () {
     expect(res.publicKey).to.match(/^[a-z0-9]{64}$/);
     pubKey  = res.publicKey;
     address = res.address;
+    lisk32 = res.lisk32;
   });
 
   /**
@@ -140,10 +147,10 @@ describe('Integration tests', function () {
     it('returned publicKeys should match returned addresses', async () => {
       for (let acc = 0; acc < 3; acc++) {
         for (let index = 0; index < 3; index++) {
-          const { publicKey, address } = await dl.getPubKey(account.account(acc + 200)
+          const { publicKey, lisk32 } = await dl.getPubKey(account.account(acc + 200)
           );
           expect(publicKey.length).to.be.eq(64);
-          expect(cryptography.getBase32AddressFromPublicKey(Buffer.from(publicKey, 'hex'))).to.be.eq(address);
+          expect(cryptography.getBase32AddressFromPublicKey(Buffer.from(publicKey, 'hex'))).to.be.eq(lisk32);
         }
       }
     });
@@ -151,6 +158,7 @@ describe('Integration tests', function () {
     it('should prompt address on ledger screen', async () => {
       const res = await dl.getPubKey(account, true);
       expect(res.address).to.be.eq(address);
+      expect(res.lisk32).to.be.eq(lisk32);
     });
   });
 
@@ -211,6 +219,36 @@ describe('Integration tests', function () {
   /**
    * Sign TX
    */ 
+
+  /*
+   describe('transactions', () => {
+
+    async function signAndVerify(txBytes: Buffer, acc: LedgerAccount = account) {
+      const signature = await dl.signTX(acc, txBytes);
+      const txHash = cryptography.hash(txBytes);
+      const verified  = sodium.crypto_sign_verify_detached(signature, txHash, Buffer.from(pubKey, 'hex'));
+      expect(verified).is.true;
+    }
+
+    describe('test',  async () => {
+      const signingBytes = transactions.getSigningBytes(TransferAssetSchema.schema, {
+        moduleID: 2,
+        assetID: 0,
+        nonce: BigInt(3),
+        fee: BigInt(10000000),
+        senderPublicKey: Buffer.from('lsks96vwgy7yjaspoy2c2dnrujeebfhe63f7x3pov'),
+        asset: {
+            amount: BigInt(10000000),
+            recipientAddress: Buffer.from('lsks96vwgy7yjaspoy2c2dnrujeebfhe63f7x3pov'),
+            data: '',
+        },
+      });
+    
+      const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
+      await signAndVerify(txBytes);
+    });
+   });
+*/
 
   /*
   describe('transactions', () => {

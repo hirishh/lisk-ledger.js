@@ -44,7 +44,7 @@ export class DposLedger {
    * Retrieves a publicKey associated to an account
    * @param {LedgerAccount|Buffer} account or bip32 buffer
    * @param {boolean} showOnLedger ask ledger to show the address.
-   * @returns {Promise<{publicKey: string, account:string}>}
+   * @returns {Promise<{publicKey: string, account:string, lisk32: string}>}
    * @example
    * ```javascript
    *
@@ -52,11 +52,13 @@ export class DposLedger {
    *   .then((resp) => {
    *     console.log(resp.publicKey);
    *     console.log(resp.address);
+   *     console.log(resp.lisk32);
    *   });
    * ```
    */
   // tslint:disable-next-line max-line-length
-  public async getPubKey(account: LedgerAccount | Buffer, showOnLedger: boolean = false): Promise<{ publicKey: string, address: string }> {
+  public async getPubKey(account: LedgerAccount | Buffer, showOnLedger: boolean = false):
+    Promise<{ publicKey: string, address: string, lisk32: string }> {
     const pathBuf = Buffer.isBuffer(account) ? account : account.derivePath();
     const resp    = await this.exchange([
       0x04,
@@ -65,11 +67,12 @@ export class DposLedger {
       pathBuf,
     ]);
 
-    const [publicKey, address] = resp;
+    const [publicKey, address, lisk32] = resp;
 
     return {
-      address  : address.toString('utf8'),
       publicKey: publicKey.toString('hex'),
+      address  : address.toString('hex'),
+      lisk32   : lisk32.toString('utf8')
     };
   }
 
