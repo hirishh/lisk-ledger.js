@@ -1,4 +1,3 @@
-import * as sodium from 'libsodium-wrappers';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
@@ -8,29 +7,29 @@ import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import { isBrowser } from 'browser-or-node';
 import { ITransport } from '../../src/ledger';
-import { encode as encodeVarInt } from 'varuint-bitcoin';
-import { sha256 } from 'js-sha256';
-import { TransferAssetSchema } from '../LiskSchemas';
+import {
+  TransferAssetSchema,
+  DPOSRegisterDelegateSchema,
+  LegacyAccountReclaimSchema } from '../LiskSchemas';
 
 chai.use(chaiAsPromised);
 
-function verifySignedMessage(prefix: string, message: string | Buffer, signature: Buffer, pubKey: string): boolean {
-  const prefixBuf = Buffer.from(prefix, 'utf8');
-  const msgBuf    = Buffer.isBuffer(message) ? message : Buffer.from(message, 'utf8');
-  const buf       = Buffer.concat([
-    encodeVarInt(prefixBuf.length),
-    prefixBuf,
-    encodeVarInt(msgBuf.length),
-    msgBuf,
-  ]);
+const msg = 0x80;
+const rest = 0x7f;
 
-  const firstSha        = Buffer.from(sha256(buf), 'hex');
-  const signablePayload = Buffer.from(sha256(firstSha), 'hex');
+const writeUInt32 = (value) => {
+  const result = [];
+  let index = 0;
+  while (value > rest) {
+      result[index] = msg | ((value & rest) >>> 0);
+      value = (value >>> 7) >>> 0;
+      index += 1;
+  }
+  result[index] = value;
+  return Buffer.from(result);
+};
 
-  return cryptography.verifyData(signablePayload, signature, Buffer.from(pubKey, 'hex'))
-}
-
-describe('Integration tests', function () {
+describe('signTX API', function () {
   this.timeout(150222200);
   let dl: DposLedger;
   let account: LedgerAccount;
@@ -38,7 +37,6 @@ describe('Integration tests', function () {
   let address: string;
   let lisk32: string;
   let transport: ITransport;
-  const msgPrefix = cryptography.constants.SIGNED_MESSAGE_PREFIX;
   const networkIdentifier = cryptography.getNetworkIdentifier(
     cryptography.hexToBuffer("23ce0366ef0a14a91e5fd4b1591fc880ffbef9d988ff8bebf8f3666b0c09597d"),
     "Lisk",
@@ -53,205 +51,118 @@ describe('Integration tests', function () {
   });
 
   beforeEach(async () => {
+    console.info("");
     account   = new LedgerAccount();
     const res = await dl.getPubKey(account);
+    console.info("beforeEach res", res);
     expect(res.publicKey).to.match(/^[a-z0-9]{64}$/);
     pubKey  = res.publicKey;
     address = res.address;
     lisk32 = res.lisk32;
-  });
-
-  /**
-   * VERSION AND PING
-   */ 
-
-  it('version() should return version', async () => {
-    expect(await dl.version()).to.be.deep.eq({
-      version: '1.4.3',
-      coinID : 'lisk'
-    });
-  });
-
-  describe('ping', () => {
-    it('should ping', async () => {
-      await dl.ping();
-    });
-  });
-
-  /**
-   * Errors
-   */ 
-
-   describe('comm_errors', () => {
-
-    it('should fail if we start comm without having started', async () => {
-      // first command 9bytes + 1bytes
-      return expect(transport.send(0xe0, 90, 0, 0, Buffer.alloc(9)))
-        .to.be.rejectedWith('Ledger device: CODE_NOT_INITIALIZED (0x9802)');
-      // NOTE: this expects that there are no pending open comm from other tests.
-      // If this fails suddenly, then it probably means that c implementation has a BUG
-
-    });
-
-    it('should fail if we close comm without having sent anything', async () => {
-      return expect(transport.send(0xe0, 91, 0, 0))
-        .to.be.rejectedWith('Ledger device: CODE_NOT_INITIALIZED (0x9802)');
-    });
-
-    /*
-    it('should fail if we try to sign an unknown tx', async () => {
-      const tx = new SendTx()
-        .set('amount', 0)
-        .set('timestamp', 10)
-        .set('fee', 100)
-        .set('recipientId', '123456781230L')
-        .set('senderPublicKey', pubKey);
-
-      tx.type = 11; // unknwon type.
-
-      return expect(dl.signTX(account, tx.getBytes()))
-        .to.be.rejectedWith('Ledger device: Invalid data received (0x6a80)'); // INCORRECT_DATA
-    });
-    */
-
-    it('should throw if unknown command', () => {
-      return expect(dl.exchange(0x11))
-        .to.be.rejectedWith('Ledger device: UNKNOWN_ERROR (0x6a81)'); // INCORRECT_DATA
-    });
-  });
-
-  /**
-   * Get PubKey
-   */ 
-
-  describe('getPubKey', () => {
-    it('should return always the same pubKey for same path', async () => {
-      const target = await dl.getPubKey(account);
-      console.info('res', target);
-      expect(target.publicKey).to.be.eq(pubKey);
-    });
-    it('should change if account index is changed', async () => {
-      const target = await dl.getPubKey(account.account(2));
-      expect(target.publicKey).to.be.not.eq(pubKey)
-    });
-
-    it('should treat every value as different', async () => {
-      // reset;
-      account.account(0);
-      const zero = await dl.getPubKey(account);
-      account.account(1);
-      const acc = await dl.getPubKey(account);
-      expect(zero.publicKey).to.not.be.equal(acc.publicKey);
-    });
-
-    it('returned publicKeys should match returned addresses', async () => {
-      for (let acc = 0; acc < 3; acc++) {
-        for (let index = 0; index < 3; index++) {
-          const { publicKey, lisk32 } = await dl.getPubKey(account.account(acc + 200)
-          );
-          expect(publicKey.length).to.be.eq(64);
-          expect(cryptography.getBase32AddressFromPublicKey(Buffer.from(publicKey, 'hex'))).to.be.eq(lisk32);
-        }
-      }
-    });
-
-    it('should prompt address on ledger screen', async () => {
-      const res = await dl.getPubKey(account, true);
-      expect(res.address).to.be.eq(address);
-      expect(res.lisk32).to.be.eq(lisk32);
-    });
-  });
-
-  /**
-   * Sign MSG
-   */ 
-
-  describe('Messages', () => {
-    it('it should generate valid signature', async () => {
-      const msg       = 'testMessage';
-      const signature = await dl.signMSG(account, msg);
-      console.info('signature', signature);
-      const res = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
-    it('should show <binary data> if not printable', async () => {
-      const msg       = Buffer.concat([
-        Buffer.from(new Array(32).fill(1)),
-      ]);
-      const signature = await dl.signMSG(account, msg);
-      const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
-    it('should rewrite msg to binary data if more than 40% of data is non printable', async () => {
-      const msg       = Buffer.concat([
-        Buffer.from('abcde', 'utf8'), // 6 bytes
-        Buffer.from('00000000', 'hex'), // 4 bytes
-      ]);
-      const signature = await dl.signMSG(account, msg);
-      const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
-    it('should rewrite msg to binary data if all text but first byte unprintable', async () => {
-      const msg       = Buffer.concat([
-        Buffer.from('00', 'hex'), // 4 bytes,
-        Buffer.from('abcde', 'utf8'), // 6 bytes
-      ]);
-      const signature = await dl.signMSG(account, msg);
-      const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
-    it('should gen valid signature for short message with newline', async () => {
-      const msg       = 'hey\nhi';
-      const signature = await dl.signMSG(account, msg);
-      const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
-    it('should gen valid signature for 1000-prefix-4 message', async () => {
-      const msg       = `${new Array(1000 - msgPrefix.length - 4).fill(null)
-        .map(() => String.fromCharCode('a'.charCodeAt(0) + Math.ceil(Math.random() * 21)))
-        .join('')}`;
-      const signature = await dl.signMSG(account, msg);
-      const res       = verifySignedMessage(msgPrefix, msg, signature, pubKey);
-      expect(res).is.true;
-    });
+    console.info("pubKey buffer: ", Buffer.from(pubKey, 'hex'));
   });
 
   /**
    * Sign TX
    */ 
 
-  /*
-   describe('transactions', () => {
+  async function signAndVerify(txBytes: Buffer, acc: LedgerAccount = account) {
+    const signature = await dl.signTX(acc, txBytes);
+    console.info("signature", signature);
+    const txHash = cryptography.hash(txBytes);
+    const verified = cryptography.verifyData(txHash, signature, Buffer.from(pubKey, 'hex'));
+    expect(verified).is.true;
+  }
 
-    async function signAndVerify(txBytes: Buffer, acc: LedgerAccount = account) {
-      const signature = await dl.signTX(acc, txBytes);
-      const txHash = cryptography.hash(txBytes);
-      const verified  = sodium.crypto_sign_verify_detached(signature, txHash, Buffer.from(pubKey, 'hex'));
-      expect(verified).is.true;
-    }
+  
+  it('test 2:0 transfer',  async () => {
 
-    describe('test',  async () => {
-      const signingBytes = transactions.getSigningBytes(TransferAssetSchema.schema, {
-        moduleID: 2,
-        assetID: 0,
-        nonce: BigInt(3),
-        fee: BigInt(10000000),
-        senderPublicKey: Buffer.from('lsks96vwgy7yjaspoy2c2dnrujeebfhe63f7x3pov'),
-        asset: {
-            amount: BigInt(10000000),
-            recipientAddress: Buffer.from('lsks96vwgy7yjaspoy2c2dnrujeebfhe63f7x3pov'),
-            data: '',
-        },
-      });
-    
-      const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
-      await signAndVerify(txBytes);
+    const signingBytes = transactions.getSigningBytes(TransferAssetSchema.schema, {
+      moduleID: 2,
+      assetID: 0,
+      nonce: BigInt(3),
+      fee: BigInt(100000),
+      senderPublicKey: Buffer.from(address, "hex"),
+      asset: {
+        amount: BigInt(100000000),
+        recipientAddress: Buffer.from(address, "hex"),
+        data: '',
+      },
     });
-   });
-*/
+  
+    const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
+    console.info("writeUInt32 2", writeUInt32(2));
+    console.info("writeUInt32 0", writeUInt32(0));
+    console.info("networkIdentifier: ", networkIdentifier);
+    console.info("networkIdentifier: ", networkIdentifier.toString('hex').toUpperCase());
+    console.info("senderPublicKey: ", address);
+    console.info("senderPublicKey: ", Buffer.from(address, "hex"));
+    console.info("signingBytes", signingBytes);
+    console.info("signingBytes", signingBytes.toString('hex').toUpperCase());
+    console.info("txBytes", txBytes);
+    console.info("txBytes", txBytes.toString('hex').toUpperCase());
+    
+    await signAndVerify(txBytes);
+  });
+  
+
+  it('test 5:0 register delegate',  async () => {
+
+    const signingBytes = transactions.getSigningBytes(DPOSRegisterDelegateSchema.schema, {
+      moduleID: 5,
+      assetID: 0,
+      nonce: BigInt(3),
+      fee: BigInt(100000),
+      senderPublicKey: Buffer.from(address, "hex"),
+      asset: {
+        username: 'hirish_delegate',
+      },
+    });
+  
+    const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
+    console.info("writeUInt32 2", writeUInt32(2));
+    console.info("writeUInt32 0", writeUInt32(0));
+    console.info("networkIdentifier: ", networkIdentifier);
+    console.info("networkIdentifier: ", networkIdentifier.toString('hex').toUpperCase());
+    console.info("senderPublicKey: ", address);
+    console.info("senderPublicKey: ", Buffer.from(address, "hex"));
+    console.info("signingBytes", signingBytes);
+    console.info("signingBytes", signingBytes.toString('hex').toUpperCase());
+    console.info("txBytes", txBytes);
+    console.info("txBytes", txBytes.toString('hex').toUpperCase());
+    
+    await signAndVerify(txBytes);
+  });
+
+  it('test 1000:0 reclaim LSK',  async () => {
+
+    const signingBytes = transactions.getSigningBytes(LegacyAccountReclaimSchema.schema, {
+      moduleID: 1000,
+      assetID: 0,
+      nonce: BigInt(3),
+      fee: BigInt(100000),
+      senderPublicKey: Buffer.from(address, "hex"),
+      asset: {
+        amount: BigInt(100000000),
+      },
+    });
+  
+    const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
+    console.info("writeUInt32 2", writeUInt32(2));
+    console.info("writeUInt32 0", writeUInt32(0));
+    console.info("networkIdentifier: ", networkIdentifier);
+    console.info("networkIdentifier: ", networkIdentifier.toString('hex').toUpperCase());
+    console.info("senderPublicKey: ", address);
+    console.info("senderPublicKey: ", Buffer.from(address, "hex"));
+    console.info("signingBytes", signingBytes);
+    console.info("signingBytes", signingBytes.toString('hex').toUpperCase());
+    console.info("txBytes", txBytes);
+    console.info("txBytes", txBytes.toString('hex').toUpperCase());
+    
+    await signAndVerify(txBytes);
+  });
 
   /*
-  describe('transactions', () => {
     async function signAndVerify(tx: BaseTx<any>, acc: LedgerAccount = account) {
       const signature = await dl.signTX(acc, tx.getBytes());
       const verified  = sodium.crypto_sign_verify_detached(signature, tx.getHash(), Buffer.from(pubKey, 'hex'));
@@ -568,7 +479,6 @@ describe('Integration tests', function () {
       });
 
     });
-  });
   */
 
 });

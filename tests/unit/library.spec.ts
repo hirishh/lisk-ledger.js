@@ -158,7 +158,9 @@ describe('library', () => {
       account              = new LedgerAccount();
       derivePathSpy        = sinon.spy(account, 'derivePath');
       instanceExchangeStub = sinon.stub(instance, 'exchange');
-      instanceExchangeStub.resolves([Buffer.from('aa', 'hex'), Buffer.from('123','utf8')]);
+      instanceExchangeStub.resolves([Buffer.from('aa', 'hex'),
+                                     Buffer.from('bb', 'hex'),
+                                     Buffer.from('123','utf8')]);
     });
 
     it('should call account derivePath', async () => {
@@ -195,9 +197,10 @@ describe('library', () => {
       ]);
     });
     it('should return publicKey and address', async () => {
-      const {publicKey, address} = await instance.getPubKey(account);
+      const {publicKey, address, lisk32} = await instance.getPubKey(account);
       expect(publicKey).to.be.eq('aa');
-      expect(address).to.be.eq('123');
+      expect(address).to.be.eq('bb');
+      expect(lisk32).to.be.eq('123');
     });
   });
 
