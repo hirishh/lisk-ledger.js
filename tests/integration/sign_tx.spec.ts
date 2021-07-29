@@ -104,7 +104,6 @@ describe('signTX API', function () {
     
     await signAndVerify(txBytes);
   });
-  
 
   it('test 5:0 register delegate',  async () => {
 
@@ -112,10 +111,10 @@ describe('signTX API', function () {
       moduleID: 5,
       assetID: 0,
       nonce: BigInt(3),
-      fee: BigInt(100000),
+      fee: BigInt(2500000000),
       senderPublicKey: Buffer.from(address, "hex"),
       asset: {
-        username: 'hirish_delegate',
+        username: 'vote_for_hirish',
       },
     });
   
@@ -133,6 +132,8 @@ describe('signTX API', function () {
     
     await signAndVerify(txBytes);
   });
+
+  /*
 
   it('test 1000:0 reclaim LSK',  async () => {
 
@@ -161,6 +162,8 @@ describe('signTX API', function () {
     
     await signAndVerify(txBytes);
   });
+
+  */
 
   /*
     async function signAndVerify(tx: BaseTx<any>, acc: LedgerAccount = account) {
