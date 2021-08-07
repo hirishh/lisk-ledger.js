@@ -38,7 +38,6 @@ describe('getPubKey API', function () {
 
   it('should return always the same pubKey for same path', async () => {
     const target = await dl.getPubKey(account);
-    console.info('res', target);
     expect(target.publicKey).to.be.eq(pubKey);
   });
   it('should change if account index is changed', async () => {

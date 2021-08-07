@@ -58,7 +58,6 @@ describe('signMSG API', function () {
   it('it should generate valid signature', async () => {
     const msg = 'testMessage';
     const signature = await dl.signMSG(account, msg);
-    console.info('signature', signature);
     const res = verifySignedMessage(msgPrefix, msg, signature, pubKey);
     expect(res).is.true;
   });

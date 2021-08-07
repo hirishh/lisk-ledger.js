@@ -28,7 +28,7 @@ describe('Communications', function () {
 
   it('version() should return version', async () => {
     expect(await dl.version()).to.be.deep.eq({
-      version: '1.4.3',
+      version: '2.0.0',
       coinID: 'lisk'
     });
   });
