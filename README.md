@@ -37,7 +37,7 @@ This library, and the ledger app, have been tested with `@ledgerhq/hw-transport-
 import TransportWebUsb from '@ledgerhq/hw-transport-webusb';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import { isBrowser, isNode } from 'browser-or-node';
-import { DposLedger } from 'dpos-ledger-api';
+import { LiskLedger } from '@hirishh/lisk-ledger.js';
 
 let transportMethod;
 if (isBrowser) {
@@ -49,14 +49,14 @@ if (isBrowser) {
 }
 
 transportMethod.create()
-  .then((transport) => new DposLedger(transport));
+  .then((transport) => new LiskLedger(transport));
   .then((instance) => {
     // ..
   });
 
 // Or by using async/await
 let transport = TransportNodeHid.create();
-let instance = new DposLedger(transport);
+let instance = new LiskLedger(transport);
 let account = new LedgerAccount();
 const res = await instance.getPubKey(account);
 
