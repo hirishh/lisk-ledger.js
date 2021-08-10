@@ -11,3 +11,5 @@ README.md
 karma.conf.js
 .eslintignore
 .eslintrc
+yarn.lock
+src
