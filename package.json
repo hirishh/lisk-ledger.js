@@ -26,6 +26,10 @@
     "type": "git",
     "url": "https://github.com/hirishh/lisk-ledger.js.git"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "bip32-path": "^0.4.2",
     "crc": "^3.8.0"
