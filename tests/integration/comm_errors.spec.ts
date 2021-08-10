@@ -1,7 +1,7 @@
 import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
-import { DposLedger } from '../../src/';
+import { LiskLedger } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import { isBrowser } from 'browser-or-node';
@@ -11,12 +11,12 @@ chai.use(chaiAsPromised);
 
 describe('Communications', function () {
   this.timeout(150222200);
-  let dl: DposLedger;
+  let dl: LiskLedger;
   let transport: ITransport;
 
   before(async () => {
     transport = await (isBrowser ? TransportU2F.create() : TransportNodeHid.create());
-    dl = new DposLedger(transport);
+    dl = new LiskLedger(transport);
   });
   after(() => {
     transport.close();

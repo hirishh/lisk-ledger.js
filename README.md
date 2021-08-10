@@ -49,10 +49,17 @@ if (isBrowser) {
 }
 
 transportMethod.create()
-  .then((transport) => new DposLedger(transport););
+  .then((transport) => new DposLedger(transport));
   .then((instance) => {
     // ..
   });
+
+// Or by using async/await
+let transport = TransportNodeHid.create();
+let instance = new DposLedger(transport);
+let account = new LedgerAccount();
+const res = await instance.getPubKey(account);
+
 ```
 
 ## Thanks

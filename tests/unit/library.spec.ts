@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { SinonSpy, SinonStub } from 'sinon';
-import { DposLedger } from '../../src/library';
+import { LiskLedger } from '../../src/library';
 import { LedgerAccount } from '../../src/account';
 import { crc16ccitt as crc16 } from 'crc';
 import * as chaiAsPromised from 'chai-as-promised';
@@ -10,7 +10,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 
 describe('library', () => {
-  let instance: DposLedger;
+  let instance: LiskLedger;
   let commSendStub: SinonStub;
   let closeStub: SinonStub;
   let setScrambleKeyStub: SinonStub;
@@ -23,7 +23,7 @@ describe('library', () => {
       close         : closeStub,
       setScrambleKey: setScrambleKeyStub
     };
-    instance           = new DposLedger(transport);
+    instance = new LiskLedger(transport);
   });
   function buildCommProtocol(data: Buffer, finalResp: Buffer[] = [Buffer.from('aa', 'hex')], chunkSize: number = 240) {
     const chunks  = Math.ceil(data.length / chunkSize);
@@ -58,19 +58,19 @@ describe('library', () => {
 
   describe('constructor', () => {
     it ('should throw if chunkSize > 240', () => {
-      expect(() => new DposLedger({} as never, 241))
+      expect(() => new LiskLedger({} as never, 241))
         .to.throw('Chunk size cannot exceed 240');
     });
     it ('should throw if chunkSize < 1', () => {
-      expect(() => new DposLedger({} as never, 0))
+      expect(() => new LiskLedger({} as never, 0))
         .to.throw('Chunk size cannot be less than 1');
     });
     it ('should throw if transport is null', () => {
-      expect(() => new DposLedger(null))
+      expect(() => new LiskLedger(null))
         .to.throw('Transport cannot be empty');
     });
     it ('should throw if transport is undefined', () => {
-      expect(() => new DposLedger(undefined))
+      expect(() => new LiskLedger(undefined))
         .to.throw('Transport cannot be empty');
     });
   });

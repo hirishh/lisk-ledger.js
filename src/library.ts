@@ -9,16 +9,16 @@ import { ITransport } from './ledger';
  * ```javascript
  *
  * import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
- * import { DposLedger, LedgerAccount } from 'dpos-ledger-ts';
+ * import { LiskLedger, LedgerAccount } from '@hirishh/lisk-ledger.js';
  *
  * const account = new LedgerAccount();
  * TransportNodeHid.create()
- *   .then((transport) => new DposLedger(transport))
+ *   .then((transport) => new LiskLedger(transport))
  *   .then((instance) => instance.getPubKey(account));
  *   .then(({publicKey}) => console.log(`pubKey: ${publicKey}`);
  * ```
  */
-export class DposLedger {
+export class LiskLedger {
 
   public progressListener: IProgressListener = null;
 
@@ -78,7 +78,7 @@ export class DposLedger {
 
   /**
    * Signs a transaction. Transaction must be provided as a buffer using getBytes.
-   * @see https://github.com/vekexasia/dpos-offline/blob/master/src/trxTypes/BaseTx.ts#L52
+   * @see https://lisk.com/documentation/lisk-sdk/references/lisk-elements/transactions.html#getsigningbytes
    * @param {LedgerAccount | Buffer} account or raw bip32 buffer
    * @param {Buffer} buff buffer containing the bytes of a transaction
    * @returns {Promise<Buffer>} signature.

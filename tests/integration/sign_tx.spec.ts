@@ -2,7 +2,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import { expect } from 'chai';
 import { cryptography, transactions } from '@liskhq/lisk-client';
-import { DposLedger, LedgerAccount } from '../../src/';
+import { LiskLedger, LedgerAccount } from '../../src/';
 import TransportU2F from '@ledgerhq/hw-transport-u2f';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 import { isBrowser } from 'browser-or-node';
@@ -34,7 +34,7 @@ const writeUInt32 = (value) => {
 
 describe('signTX API', function () {
   this.timeout(150222200);
-  let dl: DposLedger;
+  let dl: LiskLedger;
   let account: LedgerAccount;
   let pubKey: string;
   let address: string;
@@ -47,7 +47,7 @@ describe('signTX API', function () {
 
   before(async () => {
     transport = await (isBrowser ? TransportU2F.create() : TransportNodeHid.create());
-    dl        = new DposLedger(transport);
+    dl        = new LiskLedger(transport);
   });
   after(() => {
     transport.close();
