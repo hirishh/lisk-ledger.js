@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DposLedger = void 0;
+exports.LiskLedger = void 0;
 var crc16 = require("crc/lib/crc16_ccitt");
 /**
  * Communication Protocol class.
@@ -44,22 +44,22 @@ var crc16 = require("crc/lib/crc16_ccitt");
  * ```javascript
  *
  * import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
- * import { DposLedger, LedgerAccount } from 'dpos-ledger-ts';
+ * import { LiskLedger, LedgerAccount } from '@hirishh/lisk-ledger.js';
  *
  * const account = new LedgerAccount();
  * TransportNodeHid.create()
- *   .then((transport) => new DposLedger(transport))
+ *   .then((transport) => new LiskLedger(transport))
  *   .then((instance) => instance.getPubKey(account));
  *   .then(({publicKey}) => console.log(`pubKey: ${publicKey}`);
  * ```
  */
-var DposLedger = /** @class */ (function () {
+var LiskLedger = /** @class */ (function () {
     /**
      * @param {ITransport} transport transport class.
      * @param {number} chunkSize lets you specify the chunkSize for each communication.<br/>
      * <strong>DO not</strong> change if you don't know what you're doing.
      */
-    function DposLedger(transport, chunkSize) {
+    function LiskLedger(transport, chunkSize) {
         if (chunkSize === void 0) { chunkSize = 240; }
         this.transport = transport;
         this.chunkSize = chunkSize;
@@ -92,7 +92,7 @@ var DposLedger = /** @class */ (function () {
      * ```
      */
     // tslint:disable-next-line max-line-length
-    DposLedger.prototype.getPubKey = function (account, showOnLedger) {
+    LiskLedger.prototype.getPubKey = function (account, showOnLedger) {
         if (showOnLedger === void 0) { showOnLedger = false; }
         return __awaiter(this, void 0, void 0, function () {
             var pathBuf, resp, publicKey, address, lisk32;
@@ -120,7 +120,7 @@ var DposLedger = /** @class */ (function () {
     };
     /**
      * Signs a transaction. Transaction must be provided as a buffer using getBytes.
-     * @see https://github.com/vekexasia/dpos-offline/blob/master/src/trxTypes/BaseTx.ts#L52
+     * @see https://lisk.com/documentation/lisk-sdk/references/lisk-elements/transactions.html#getsigningbytes
      * @param {LedgerAccount | Buffer} account or raw bip32 buffer
      * @param {Buffer} buff buffer containing the bytes of a transaction
      * @returns {Promise<Buffer>} signature.
@@ -133,7 +133,7 @@ var DposLedger = /** @class */ (function () {
      *   });
      * ```
      */
-    DposLedger.prototype.signTX = function (account, buff) {
+    LiskLedger.prototype.signTX = function (account, buff) {
         return this.sign(0x05, account, buff);
     };
     /**
@@ -153,7 +153,7 @@ var DposLedger = /** @class */ (function () {
      *   });
      * ```
      */
-    DposLedger.prototype.signMSG = function (account, what) {
+    LiskLedger.prototype.signMSG = function (account, what) {
         return __awaiter(this, void 0, void 0, function () {
             var buffer;
             return __generator(this, function (_a) {
@@ -175,7 +175,7 @@ var DposLedger = /** @class */ (function () {
      *   });
      * ```
      */
-    DposLedger.prototype.version = function () {
+    LiskLedger.prototype.version = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, version, coinID;
             return __generator(this, function (_b) {
@@ -195,7 +195,7 @@ var DposLedger = /** @class */ (function () {
      * Simple ping utility. It won't throw if ping suceeded.
      * @returns {Promise<void>}
      */
-    DposLedger.prototype.ping = function () {
+    LiskLedger.prototype.ping = function () {
         return __awaiter(this, void 0, void 0, function () {
             var res;
             return __generator(this, function (_a) {
@@ -216,7 +216,7 @@ var DposLedger = /** @class */ (function () {
      * @param {string | Buffer} hexData
      * @returns {Promise<Buffer[]>} Raw response buffers.
      */
-    DposLedger.prototype.exchange = function (hexData) {
+    LiskLedger.prototype.exchange = function (hexData) {
         return __awaiter(this, void 0, void 0, function () {
             var inputBuffer, startCommBuffer, chunkDataSize, nChunks, prevCRC, i, dataSize, dataBuffer, _a, curCRC, prevCRCLedger, _b, crc, receivedCRC, resBuf;
             return __generator(this, function (_c) {
@@ -298,7 +298,7 @@ var DposLedger = /** @class */ (function () {
      * @param {boolean} hasRequesterPKey if it has a requesterpublickey (used only in tx signing mode)
      * @returns {Promise<Buffer>} the signature
      */
-    DposLedger.prototype.sign = function (signType, account, buff) {
+    LiskLedger.prototype.sign = function (signType, account, buff) {
         return __awaiter(this, void 0, void 0, function () {
             var pathBuf, buffLength, args, signature;
             return __generator(this, function (_a) {
@@ -330,7 +330,7 @@ var DposLedger = /** @class */ (function () {
      * @param {Buffer} resBuf response from ledger
      * @returns {Array<Buffer>} decomposed response.
      */
-    DposLedger.prototype.decomposeResponse = function (resBuf) {
+    LiskLedger.prototype.decomposeResponse = function (resBuf) {
         var totalElements = resBuf.readInt8(0);
         var toRet = [];
         var index = 1; // 1 read uint8_t
@@ -342,6 +342,6 @@ var DposLedger = /** @class */ (function () {
         }
         return toRet;
     };
-    return DposLedger;
+    return LiskLedger;
 }());
-exports.DposLedger = DposLedger;
+exports.LiskLedger = LiskLedger;
