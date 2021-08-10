@@ -23,13 +23,13 @@ Both Node.JS and minified Browser version of this library are provided.
 
 To consume this library through an app running under the NodeVM, you'll need to use the [@ledgerhq/hw-transport-node-hid](https://github.com/LedgerHQ/ledgerjs/blob/master/packages/hw-transport-node-hid) transport.
 
-This library, and the ledger app, have been developed and tested with `hw-transport-node-hid@5.46.0`.
+This library, and the ledger app, have been developed and tested with `hw-transport-node-hid@6.2.0`.
 
 ### Browser
 
 The Browser version currently weights `32KB` (non gzipped). It can be used both via webpack or directly including it in your page just like any other script.
 
-This library, and the ledger app, have been tested with `@ledgerhq/hw-transport-node-hid@5.46.0` as Transport.
+This library, and the ledger app, have been tested with `@ledgerhq/hw-transport-node-hid@6.2.0` as Transport.
 
 ## Platform Indipendent Example
 
@@ -49,7 +49,7 @@ if (isBrowser) {
 }
 
 transportMethod.create()
-  .then((transport) => new DposLedger(new CommHandler(transport)););
+  .then((transport) => new DposLedger(transport););
   .then((instance) => {
     // ..
   });

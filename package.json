@@ -10,7 +10,7 @@
     "docs": "shx rm -rf docs ; typedoc --theme node_modules/typedoc-clarity-theme/bin --excludePrivate --disableOutputCheck --hideGenerator --module commonjs --mode file --tsconfig ./tsconfig.json  --out docs/ src/; touch docs/.nojekyll ",
     "lint": "eslint . --ext .ts",
     "lint-and-fix": "eslint . --ext .ts --fix",
-    "test": "echo \"No test specified\"",
+    "test": "npm run test-unit",
     "test-unit": "mocha  --bail --require ts-node/register './tests/unit/**/*.spec.ts'",
     "test-int": "mocha  --bail --require ts-node/register './tests/integration/**/*.spec.ts'",
     "test-browser": "karma start karma.conf.js",
@@ -22,6 +22,10 @@
     "Andrea <vekexasia@gmail.com>"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hirishh/lisk-ledger.js.git"
+  },
   "dependencies": {
     "bip32-path": "^0.4.2",
     "crc": "^3.8.0"
