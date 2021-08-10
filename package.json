@@ -1,5 +1,5 @@
 {
-  "name": "@hirishh/lisk-ledger",
+  "name": "@hirishh/lisk-ledger.js",
   "version": "0.0.1-alpha1",
   "description": "This library eases the interaction with the corresponding ledger nano implementation",
   "main": "dist/es5/index.js",
