@@ -181,7 +181,18 @@ export class LiskLedger {
       this.progressListener.onStart();
     }
 
-    await this.transport.send(0xe0, 89, 0, 0, startCommBuffer);
+    try {
+      const r = await this.transport.send(0xe0, 89, 0, 0, startCommBuffer);
+      if (this.decomposeResponse(r)[0].readUInt16LE(0) != inputBuffer.length) {
+        throw new Error(`Ledger did not properly handle length. Expected ${inputBuffer.length} - Received: ${this.decomposeResponse(r)[0].readUInt16LE(0)}`);
+      }
+    } catch (e) {
+      if (e.message.indexOf('0x6803') !== -1) {
+        throw new Error('Payload too big for Lisk Ledger implementation');
+      } else {
+        throw e;
+      }
+    }
 
     // Calculate number of chunks to send.
     const chunkDataSize = this.chunkSize;
