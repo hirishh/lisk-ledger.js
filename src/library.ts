@@ -181,18 +181,7 @@ export class LiskLedger {
       this.progressListener.onStart();
     }
 
-    try {
-      const r = await this.transport.send(0xe0, 89, 0, 0, startCommBuffer);
-      if (this.decomposeResponse(r)[0].readUInt16LE(0) != inputBuffer.length) {
-        throw new Error(`Ledger did not properly handle length. Expected ${inputBuffer.length} - Received: ${this.decomposeResponse(r)[0].readUInt16LE(0)}`);
-      }
-    } catch (e) {
-      if (e.message.indexOf('0x6803') !== -1) {
-        throw new Error('Payload too big for Lisk Ledger implementation');
-      } else {
-        throw e;
-      }
-    }
+    await this.transport.send(0xe0, 89, 0, 0, startCommBuffer);
 
     // Calculate number of chunks to send.
     const chunkDataSize = this.chunkSize;
@@ -205,15 +194,22 @@ export class LiskLedger {
       // copy chunk data
       const dataBuffer = inputBuffer.slice(i * chunkDataSize, i * chunkDataSize + dataSize);
 
-      const [curCRC, prevCRCLedger] = this.decomposeResponse(
-        await this.transport.send(
+      let resBuffer;
+      try {
+        resBuffer = await this.transport.send(
           0xe0,
           90,
           0,
           0,
           dataBuffer
         )
-      );
+      } catch (e) {
+        if (e.message.indexOf('0x6867') !== -1)
+          throw new Error('Payload too big for Lisk Ledger implementation');
+        else
+          throw e;
+      }
+      const [curCRC, prevCRCLedger] = this.decomposeResponse(resBuffer);
       const crc           = crc16(dataBuffer);
       const receivedCRC   = curCRC.readUInt16LE(0);
 

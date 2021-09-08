@@ -17,21 +17,6 @@ import {
 
 chai.use(chaiAsPromised);
 
-const msg = 0x80;
-const rest = 0x7f;
-
-const writeUInt32 = (value) => {
-  const result = [];
-  let index = 0;
-  while (value > rest) {
-      result[index] = msg | ((value & rest) >>> 0);
-      value = (value >>> 7) >>> 0;
-      index += 1;
-  }
-  result[index] = value;
-  return Buffer.from(result);
-};
-
 describe('signTX API', function () {
   this.timeout(150222200);
   let dl: LiskLedger;
@@ -40,10 +25,7 @@ describe('signTX API', function () {
   let address: string;
   let lisk32: string;
   let transport: ITransport;
-  const networkIdentifier = cryptography.getNetworkIdentifier(
-    cryptography.hexToBuffer("23ce0366ef0a14a91e5fd4b1591fc880ffbef9d988ff8bebf8f3666b0c09597d"),
-    "Lisk",
-  );
+  const networkIdentifier = Buffer.from('4c09e6a781fc4c7bdb936ee815de8f94190f8a7519becd9de2081832be309a99', 'hex');
 
   before(async () => {
     transport = await (isBrowser ? TransportU2F.create() : TransportNodeHid.create());
@@ -88,8 +70,6 @@ describe('signTX API', function () {
         data: '',
       },
     });
-
-    console.log(signingBytes.length);
 
     const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
     await signAndVerify(txBytes);
@@ -152,8 +132,6 @@ describe('signTX API', function () {
         ]
       },
     });
-    console.log('yo');
-    console.log(signingBytes.length);
 
     const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
     await signAndVerify(txBytes);
@@ -175,40 +153,6 @@ describe('signTX API', function () {
     const txBytes = Buffer.concat([ networkIdentifier, signingBytes ]);
     await signAndVerify(txBytes);
   });
-  describe('vekexasia', () => {
-    it('votes vekexasia', async () => {
-      const delegateBinAddr = 'aa2e3ee7f015537ecb71e66df1bb2eedbad51edb';
-      const txObject: any = {
-        moduleID: 5,
-        assetID: 1,
-        nonce: BigInt(0),
-        fee: BigInt(100000),
-        senderPublicKey: Buffer.from(pubKey, "hex"),
-        asset: {
-          votes: [
-            {
-              delegateAddress: Buffer.from(delegateBinAddr, "hex"),
-              amount: BigInt(1000000000000)
-            }
-          ],
-        },
-      };
-      txObject.fee = transactions.computeMinFee(DPOSVoteDelegateSchema.schema, txObject);
-
-      const signingBytes = transactions.getSigningBytes(DPOSVoteDelegateSchema.schema, txObject);
-      const networkIdentifierMainnet = Buffer.from('4c09e6a781fc4c7bdb936ee815de8f94190f8a7519becd9de2081832be309a99', 'hex');
-      const txBytes = Buffer.concat([ networkIdentifierMainnet, signingBytes ]);
-      const signature = await dl.signTX(account, txBytes);
-      const verified = cryptography.verifyData(txBytes, signature, Buffer.from(pubKey, 'hex'));
-
-      // txObject.signatures = [signature];
-      expect(verified).is.true;
-      console.log('yo');
-
-
-    })
-  })
-
 
   it('test 5:1 vote delegate',  async () => {
 

@@ -218,7 +218,7 @@ var LiskLedger = /** @class */ (function () {
      */
     LiskLedger.prototype.exchange = function (hexData) {
         return __awaiter(this, void 0, void 0, function () {
-            var inputBuffer, startCommBuffer, chunkDataSize, nChunks, prevCRC, i, dataSize, dataBuffer, _a, curCRC, prevCRCLedger, _b, crc, receivedCRC, resBuf;
+            var inputBuffer, startCommBuffer, r, e_1, chunkDataSize, nChunks, prevCRC, i, dataSize, dataBuffer, _a, curCRC, prevCRCLedger, _b, crc, receivedCRC, resBuf;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -247,21 +247,38 @@ var LiskLedger = /** @class */ (function () {
                         if (this.progressListener) {
                             this.progressListener.onStart();
                         }
-                        return [4 /*yield*/, this.transport.send(0xe0, 89, 0, 0, startCommBuffer)];
+                        _c.label = 1;
                     case 1:
-                        _c.sent();
+                        _c.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.transport.send(0xe0, 89, 0, 0, startCommBuffer)];
+                    case 2:
+                        r = _c.sent();
+                        if (this.decomposeResponse(r)[0].readUInt16LE(0) != inputBuffer.length) {
+                            throw new Error("Ledger did not properly handle length. Expected " + inputBuffer.length + " - Received: " + this.decomposeResponse(r)[0].readUInt16LE(0));
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _c.sent();
+                        if (e_1.message.indexOf('0x6803') !== -1) {
+                            throw new Error('Payload too big for Lisk Ledger implementation');
+                        }
+                        else {
+                            throw e_1;
+                        }
+                        return [3 /*break*/, 4];
+                    case 4:
                         chunkDataSize = this.chunkSize;
                         nChunks = Math.ceil(inputBuffer.length / chunkDataSize);
                         prevCRC = 0;
                         i = 0;
-                        _c.label = 2;
-                    case 2:
-                        if (!(i < nChunks)) return [3 /*break*/, 5];
+                        _c.label = 5;
+                    case 5:
+                        if (!(i < nChunks)) return [3 /*break*/, 8];
                         dataSize = Math.min(inputBuffer.length, (i + 1) * chunkDataSize) - i * chunkDataSize;
                         dataBuffer = inputBuffer.slice(i * chunkDataSize, i * chunkDataSize + dataSize);
                         _b = this.decomposeResponse;
                         return [4 /*yield*/, this.transport.send(0xe0, 90, 0, 0, dataBuffer)];
-                    case 3:
+                    case 6:
                         _a = _b.apply(this, [_c.sent()]), curCRC = _a[0], prevCRCLedger = _a[1];
                         crc = crc16(dataBuffer);
                         receivedCRC = curCRC.readUInt16LE(0);
@@ -275,12 +292,12 @@ var LiskLedger = /** @class */ (function () {
                         if (this.progressListener) {
                             this.progressListener.onChunkProcessed(dataBuffer);
                         }
-                        _c.label = 4;
-                    case 4:
+                        _c.label = 7;
+                    case 7:
                         i++;
-                        return [3 /*break*/, 2];
-                    case 5: return [4 /*yield*/, this.transport.send(0xe0, 91, 0, 0)];
-                    case 6:
+                        return [3 /*break*/, 5];
+                    case 8: return [4 /*yield*/, this.transport.send(0xe0, 91, 0, 0)];
+                    case 9:
                         resBuf = _c.sent();
                         if (this.progressListener) {
                             this.progressListener.onEnd();
