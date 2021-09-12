@@ -194,15 +194,22 @@ export class LiskLedger {
       // copy chunk data
       const dataBuffer = inputBuffer.slice(i * chunkDataSize, i * chunkDataSize + dataSize);
 
-      const [curCRC, prevCRCLedger] = this.decomposeResponse(
-        await this.transport.send(
+      let resBuffer;
+      try {
+        resBuffer = await this.transport.send(
           0xe0,
           90,
           0,
           0,
           dataBuffer
         )
-      );
+      } catch (e) {
+        if (e.message.indexOf('0x6867') !== -1)
+          throw new Error('Payload too big for Lisk Ledger implementation');
+        else
+          throw e;
+      }
+      const [curCRC, prevCRCLedger] = this.decomposeResponse(resBuffer);
       const crc           = crc16(dataBuffer);
       const receivedCRC   = curCRC.readUInt16LE(0);
 
